@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="ea1b69ad-115b-4a59-8f68-4ec1422c4d2f" name="Changes" comment="创建rag代码库">
+      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/rag.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/BFS&amp;DFS(6)/test.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/BFS&amp;DFS(6)/中庸行者.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/BFS&amp;DFS(6)/小华地图寻宝.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/BFS&amp;DFS(6)/智能驾驶.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/BFS&amp;DFS(6)/机器人.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/BFS&amp;DFS(6)/精准核酸检测.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/BFS&amp;DFS(6)/跳马问题.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/二分法(6)/小明找位置.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/二分法(6)/机器人搬砖.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/二分法(6)/猴子吃桃.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/二分法(6)/部门人力分配.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/二分法(6)/项目排期.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/二分法(6)/食堂供餐.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/动态规划(4)/test.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/动态规划(4)/伐木工.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/动态规划(4)/分披萨.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/动态规划(4)/园区参观路径.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/动态规划(4)/背包问题.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/字符串处理(7)/API负载集群统计.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/字符串处理(7)/Exce单元格数值统计.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/字符串处理(7)/test.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/字符串处理(7)/密码解密.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/字符串处理(7)/密码输入检测.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/字符串处理(7)/掌握单词的个数.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/字符串处理(7)/敏感字段加密.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/字符串处理(7)/数据单元的变量替换.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/数据结构(3)/dataType.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/数据结构(3)/传递悄悄话.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/数据结构(3)/生成哈夫曼树.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/滑动窗口(2)/test.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/滑动窗口(2)/宽度最小的子矩阵.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/滑动窗口(2)/最多购买宝石数目.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/自定义排序(8)/test.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/自定义排序(8)/内存冷热标记.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/自定义排序(8)/堆内存申请.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/自定义排序(8)/开源项目热度榜单.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/自定义排序(8)/手机APP防沉迷系统.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/自定义排序(8)/找出作弊的人.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/自定义排序(8)/智能成绩表.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/自定义排序(8)/机场航班调度.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/自定义排序(8)/测试用例执行计划.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/贪心算法(3)/导师请吃火锅.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/贪心算法(3)/小朋友来自多少小区.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/贪心算法(3)/高效货运.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/逻辑分析(4)/CPU算力分配.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/逻辑分析(4)/体育场找座位.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/逻辑分析(4)/石头剪刀布游戏.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/逻辑分析(4)/虚拟理财(投资)游戏.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/逻辑模拟(12)/test.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/逻辑模拟(12)/会议室占用时间段.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/逻辑模拟(12)/分配土地.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/逻辑模拟(12)/小明的幸运数.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/逻辑模拟(12)/执行任务赚积分.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/逻辑模拟(12)/数大雁.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/逻辑模拟(12)/最大社交距离.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/逻辑模拟(12)/来自异国的客人幸运数字.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/逻辑模拟(12)/根据ip查找城市.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/逻辑模拟(12)/流浪地球.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/逻辑模拟(12)/灰度图存储.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/逻辑模拟(12)/考勤信息.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../od_c/逻辑模拟(12)/螺旋数组矩阵.py" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="ROOT_SYNC" value="DONT_SYNC" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;tomas45679&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/tomas45679/pythonProject.git&quot;,
+    &quot;accountId&quot;: &quot;e3faa37a-aae4-43a4-9a84-c33a42deecfa&quot;
+  }
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 4
+}</component>
+  <component name="ProjectId" id="3JjPXCSSYKCKB5XFR10I1ZdP1lE" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_MARK_IGNORED_FILES_AS_EXCLUDED": "true",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "master",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
+  },
+  "keyToStringList": {
+    "ChangesTree.GroupingKeys": [
+      "directory",
+      "repository"
+    ]
+  }
+}]]></component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-python-sdk-53e2683a6804-9cdd278e9d02-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-251.26094.141" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="ea1b69ad-115b-4a59-8f68-4ec1422c4d2f" name="Changes" comment="" />
+      <created>1790171541603</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1790171541603</updated>
+    </task>
+    <task id="LOCAL-00001" summary="创建rag代码库">
+      <option name="closed" value="true" />
+      <created>1790172044199</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1790172044199</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
+    <servers />
+  </component>
+  <component name="UnknownFeatures">
+    <option featureType="com.intellij.fileTypeFactory" implementationName=".env" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="创建rag代码库" />
+    <option name="LAST_COMMIT_MESSAGE" value="创建rag代码库" />
+  </component>
+</project>
