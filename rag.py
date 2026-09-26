@@ -1,113 +1,189 @@
-from typing import List, TypedDict, Annotated
-import operator
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_openai import ChatOpenAI
+"""
+LangGraph RAG 图：
+START → retrieve → grade_relevance → [相关] → generate → END
+                                   → [不相关] → rewrite_query → retrieve (循环)
+"""
+from typing import TypedDict, List, Annotated
+from operator import add
+
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_chroma import Chroma
-from langchain_community.retrievers import BM25Retriever
-from langchain.retrievers import EnsembleRetriever
-from langgraph.graph import END, StateGraph, START
-import os
+from langchain_core.prompts import ChatPromptTemplate
+from langgraph.graph import StateGraph, START, END
+
+from config import *
 
 
-
-# 1. 定义 Agent 状态
-class GraphState(TypedDict):
-    question: str
-    generation: str
-    documents: List[str]
-    retry_count: int
-
-
-# 初始化 LLM 和 检索器
-os.environ["OPENROUTER_API_KEY"] = "your_openrouter_key"
-llm = ChatOpenAI(
-    model="openai/gpt-4o-mini",  # 或者选免费的 qwen 模型
-    base_url="https://openrouter.ai/api/v1",
-    api_key=os.environ["OPENROUTER_API_KEY"]
-)
-
-embeddings = OpenAIEmbeddings(model="Qwen/Qwen3-Embedding-8B", base_url="https://api.siliconflow.cn/v1")
-vectorstore = Chroma(persist_directory="./chroma_db", embedding_function=embeddings, collection_name="security_kb")
-vector_retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
-
-# BM25 检索器 (假设你在 ingest 时保存了分词后的文本)
-# 这里简化处理，实际应从数据库或内存加载
-bm25_retriever = BM25Retriever.from_documents(vectorstore.get())
-bm25_retriever.k = 5
-
-# RRF 混合检索 (EnsembleRetriever 默认使用 RRF 算法融合)
-ensemble_retriever = EnsembleRetriever(
-    retrievers=[vector_retriever, bm25_retriever],
-    weights=[0.6, 0.4]  # 向量占60%，BM25占40% (安全领域精确匹配CVE/命令很重要)
-)
+# ============ State 定义 ============
+class RAGState(TypedDict):
+    question: str                    # 用户原始问题
+    rewritten_question: str          # 改写后的查询（可能多轮）
+    documents: List[str]             # 检索到的文档片段
+    answer: str                      # 最终回答
+    relevance_score: str             # "yes" / "no"
+    retry_count: int                 # 重试次数
 
 
-# 2. 定义节点 (Nodes)
-def retrieve(state):
-    """检索节点：执行 RRF 混合检索"""
-    question = state["question"]
-    documents = ensemble_retriever.invoke(question)
-    return {"documents": [doc.page_content for doc in documents]}
+# ============ 初始化组件 ============
+def get_llm():
+    return ChatOpenAI(
+        model=CHAT_MODEL,
+        api_key=OPENROUTER_API_KEY,
+        base_url=OPENROUTER_BASE_URL,
+        temperature=0,
+    )
+
+def get_embeddings():
+    return OpenAIEmbeddings(
+        model=EMBEDDING_MODEL,
+        api_key=OPENROUTER_API_KEY,
+        base_url=OPENROUTER_BASE_URL,
+        check_embedding_ctx_length=False
+    )
+
+def get_vectordb():
+    return Chroma(
+        collection_name=COLLECTION_NAME,
+        embedding_function=get_embeddings(),
+        persist_directory=CHROMA_PERSIST_DIR,
+    )
 
 
-def rewrite_query(state):
-    """查询重写节点：利用 LLM 将模糊的安全问题转化为精确的检索词"""
-    question = state["question"]
-    prompt = f"""你是一个网络安全专家。请将用户的模糊问题重写为适合在安全知识库中检索的精确查询。
-    保留关键实体（如 CVE 编号、漏洞名、工具名）。
-    原始问题: {question}
-    重写后的查询:"""
-    response = llm.invoke(prompt)
-    return {"question": response.content}
+# ============ 节点函数 ============
+def retrieve(state: RAGState) -> dict:
+    """检索节点：从向量库中检索相关文档"""
+    print(f"[retrieve] 查询: {state.get('rewritten_question') or state['question']}", flush=True)
+    vectordb = get_vectordb()
+    query = state.get("rewritten_question") or state["question"]
+    docs = vectordb.similarity_search(query, k=TOP_K)
+    print(f"[retrieve] 检索到 {len(docs)} 个文档", flush=True)
+    # if docs:
+    #     print(f"[retrieve] 第一个文档片段: {docs[0].page_content[:80]}...", flush=True)
+    return {"documents": [doc.page_content for doc in docs]}
 
 
-def generate(state):
-    """生成节点：基于检索到的上下文回答问题"""
-    question = state["question"]
-    documents = "\n\n---\n\n".join(state["documents"])
-
-    prompt = ChatPromptTemplate.from_template("""
-    你是一个资深的网络安全专家。请仅根据以下提供的知识库上下文回答用户的问题。
-    如果上下文中没有答案，请明确告知“知识库中未找到相关安全信息”，不要编造（防止幻觉）。
-    如果涉及代码或命令，请使用 Markdown 代码块格式。
-
-    上下文:
-    {documents}
-
-    问题: {question}
-    """)
+def grade_relevance(state: RAGState) -> dict:
+    """相关性评估节点：判断检索结果是否与问题相关"""
+    print(f"[grade] 开始评估相关性，retry_count={state.get('retry_count',0)}", flush=True)
+    llm = get_llm()
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", """你是一个安全领域专家。判断以下检索到的文档片段是否与用户问题相关。
+只需回答 yes 或 no。"""),
+        ("user", "问题：{question}\n\n检索到的文档：\n{documents}")
+    ])
     chain = prompt | llm
-    generation = chain.invoke({"documents": documents, "question": question})
-    return {"generation": generation.content}
+    response = chain.invoke({
+        "question": state["question"],
+        "documents": "\n---\n".join(state["documents"][:3])  # 取前3个评估
+    })
+    score = "yes" if "yes" in response.content.lower() else "no"
+    print(f"[grade] 判定: {score}", flush=True)
+    retry = state.get("retry_count", 0)
+    if score == "no":
+        retry += 1
+    return {"relevance_score": score, "retry_count": retry}
 
 
-# 3. 定义条件边 (Conditional Edges)
-def decide_to_generate(state):
-    """判断检索到的文档是否足够，决定是直接生成还是重写查询"""
-    # 简单策略：如果检索到的文档总字数太少，说明没搜到，去重写查询
-    total_length = sum(len(doc) for doc in state["documents"])
-    if total_length < 200 and state.get("retry_count", 0) < 2:
-        return "rewrite"
-    return "generate"
+def rewrite_query(state: RAGState) -> dict:
+    """查询改写节点：当检索不相关时，改写查询"""
+    print(f"[rewrite] 改写查询，当前 retry_count={state.get('retry_count',0)}", flush=True)
+    llm = get_llm()
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", """你是一个查询改写专家。原始问题在知识库中没有找到相关内容。
+请基于原始问题，从不同角度重新表述查询，使其更容易检索到相关信息。
+只输出改写后的查询，不要其他内容。"""),
+        ("user", "原始问题：{question}\n上次查询：{last_query}")
+    ])
+    chain = prompt | llm
+    last_query = state.get("rewritten_question") or state["question"]
+    response = chain.invoke({
+        "question": state["question"],
+        "last_query": last_query
+    })
+    new_query = response.content.strip()
+    print(f"[rewrite] 改写结果: {new_query}", flush=True)
+    return {"rewritten_question": response.content.strip()}
 
 
-# 4. 构建 LangGraph 图
-workflow = StateGraph(GraphState)
+def generate(state: RAGState) -> dict:
+    """生成节点：基于检索到的文档生成回答"""
+    print(f"[generate] 开始生成回答，文档数={len(state['documents'])}", flush=True)
+    llm = get_llm()
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", """你是一个网络安全知识助手。基于以下参考资料回答用户问题。
+规则：
+1. 只基于提供的参考资料回答，如果资料中没有答案，明确说"知识库中未找到相关信息"
+2. 回答要准确、专业，适合安全从业者阅读
+3. 如果可能，指出信息来源的具体章节
 
-# 添加节点
-workflow.add_node("retrieve", retrieve)
-workflow.add_node("rewrite_query", rewrite_query)
-workflow.add_node("generate", generate)
+参考资料：
+{context}"""),
+        ("user", "{question}")
+    ])
+    chain = prompt | llm
+    context = "\n\n---\n\n".join(state["documents"])
+    response = chain.invoke({
+        "context": context,
+        "question": state["question"]
+    })
+    print(f"[generate] 回答全文: {response.content}...", flush=True)
+    return {"answer": response.content}
 
-# 添加边
-workflow.add_edge(START, "retrieve")
-workflow.add_conditional_edges(
-    "retrieve",
-    decide_to_generate,
-    {"rewrite": "rewrite_query", "generate": "generate"}
-)
-workflow.add_edge("rewrite_query", "retrieve")  # 重写后再次检索
-workflow.add_edge("generate", END)
 
-# 编译图
-app = workflow.compile()
+# ============ 路由函数 ============
+# def should_continue(state: RAGState) -> str:
+#     """决定下一步走向"""
+#     retry = state.get("retry_count", 0)
+#     if state["relevance_score"] == "yes":
+#         return "generate"
+#     elif retry < 2:  # 最多重试2次
+#         return "rewrite"
+#     else:
+#         return "generate"  # 超过重试次数，强制生成
+def should_continue(state: RAGState) -> str:
+    retry = state.get("retry_count", 0)
+    decision = ""
+    if state["relevance_score"] == "yes":
+        decision = "generate"
+    elif retry < 2:
+        decision = "rewrite"
+    else:
+        decision = "generate"  # 超过重试次数，强制生成
+    print(f"[route] relevance_score={state['relevance_score']}, retry_count={retry}, 决策: {decision}", flush=True)
+    return decision
+
+# ============ 构建 LangGraph ============
+def build_rag_graph():
+    """构建 RAG 工作流图"""
+    graph = StateGraph(RAGState)
+
+    # 添加节点
+    graph.add_node("retrieve", retrieve)
+    graph.add_node("grade_relevance", grade_relevance)
+    graph.add_node("rewrite_query", rewrite_query)
+    graph.add_node("generate", generate)
+
+    # 定义边
+    graph.add_edge(START, "retrieve")
+    graph.add_edge("retrieve", "grade_relevance")
+    graph.add_conditional_edges("grade_relevance", should_continue, {
+        "generate": "generate",
+        "rewrite": "rewrite_query",
+    })
+    graph.add_edge("rewrite_query", "retrieve")  # 改写后重新检索
+    graph.add_edge("generate", END)
+
+    return graph.compile()
+
+
+# 编译一次，全局复用
+rag_app = build_rag_graph()
+# out = rag_app.invoke({
+#         "question": "什么是零日漏洞？",
+#         "rewritten_question": "",
+#         "documents": [],
+#         "answer": "",
+#         "relevance_score": "",
+#         "retry_count": 0,
+#     })
+# print(out)

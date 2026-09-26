@@ -1,46 +1,76 @@
-import os
-import jieba
-from langchain_community.document_loaders import DirectoryLoader, TextLoader
-from langchain_text_splitters import MarkdownHeaderTextSplitter
+"""ingest.py — 无 langchain-community 依赖版本"""
+from pathlib import Path
+from langchain_core.documents import Document
+from langchain_text_splitters import MarkdownHeaderTextSplitter, RecursiveCharacterTextSplitter
 from langchain_chroma import Chroma
 from langchain_openai import OpenAIEmbeddings
-
-# 配置 Embedding 模型 (以 SiliconFlow 为例，兼容 OpenAI 格式)
-os.environ["OPENAI_API_KEY"] = "your_siliconflow_api_key"
-embeddings = OpenAIEmbeddings(
-    model="Qwen/Qwen3-Embedding-8B",
-    base_url="https://api.siliconflow.cn/v1",
-)
+from config import *
 
 
-def ingest_data():
-    # 1. 加载 Markdown 数据
-    loader = DirectoryLoader("./data", glob="**/*.md", loader_cls=TextLoader, loader_kwargs={"encoding": "utf-8"})
-    docs = loader.load()
+def load_markdown_docs(kb_dir: str = "./data/01_OWASP防御速查表") -> list[Document]:
+    """轻量级 Markdown 加载器，替代 UnstructuredMarkdownLoader"""
+    docs = []
+    kb_path = Path(kb_dir)
+    for md_file in sorted(kb_path.rglob("*.md")):
+        content = md_file.read_text(encoding="utf-8")
+        metadata = {
+            "source": str(md_file),
+            "filename": md_file.name,
+        }
+        docs.append(Document(page_content=content, metadata=metadata))
+    print(f"📄 加载了 {len(docs)} 个 Markdown 文档")
+    return docs
 
-    # 2. 按 Markdown 标题层级切分 (保留上下文结构，对安全文档极度友好)
+
+def load_and_split(kb_dir: str = "./data/01_OWASP防御速查表"):
+    # 1. 加载（纯标准库，无需 community/unstructured）
+    docs = load_markdown_docs(kb_dir)
+
+    # 2. 按 Markdown 标题层级切分
     headers_to_split_on = [
-        ("#", "Header 1"),
-        ("##", "Header 2"),
-        ("###", "Header 3"),
+        ("#", "一级标题"),
+        ("##", "二级标题"),
+        ("###", "三级标题"),
     ]
-    splitter = MarkdownHeaderTextSplitter(headers_to_split_on=headers_to_split_on)
-    splits = []
+    md_splitter = MarkdownHeaderTextSplitter(headers_to_split_on=headers_to_split_on)
+    md_chunks = []
     for doc in docs:
-        splits.extend(splitter.split_text(doc.page_content))
+        splits = md_splitter.split_text(doc.page_content)
+        # 将原始文件元数据合并到每个 chunk
+        for split in splits:
+            split.metadata.update(doc.metadata)
+        md_chunks.extend(splits)
 
-    # 3. 初始化 Chroma 向量库
-    vectorstore = Chroma.from_documents(
-        documents=splits,
-        embedding=embeddings,
-        collection_name="security_kb",
-        persist_directory="./chroma_db"
+    # 3. 二次递归切分
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=CHUNK_SIZE,
+        chunk_overlap=CHUNK_OVERLAP,
+        separators=["\n\n", "\n", "。", "；", " ", ""],
     )
+    final_chunks = text_splitter.split_documents(md_chunks)
+    print(f"✂️  切分为 {len(final_chunks)} 个 chunks")
+    return final_chunks
 
-    # 4. 准备 BM25 检索器 (需要自定义中文分词)
-    # 将切分后的文本用 jieba 分词，存入本地 json 或直接内存使用
-    print(f"成功入库 {len(splits)} 个文档块！")
+
+def build_vectordb(chunks, persist_dir: str = CHROMA_PERSIST_DIR):
+    embeddings = OpenAIEmbeddings(
+        model=EMBEDDING_MODEL,
+        api_key=OPENROUTER_API_KEY,
+        base_url=OPENROUTER_BASE_URL,
+        check_embedding_ctx_length=False,
+        model_kwargs={"encoding_format": "float"},
+    )
+    # ✅ 使用 langchain-chroma 独立包
+    vectordb = Chroma.from_documents(
+        documents=chunks,
+        embedding=embeddings,
+        collection_name=COLLECTION_NAME,
+        persist_directory=persist_dir,
+    )
+    print(f"✅ 向量库已构建，共 {vectordb._collection.count()} 条记录")
+    return vectordb
 
 
 if __name__ == "__main__":
-    ingest_data()
+    chunks = load_and_split()
+    build_vectordb(chunks)

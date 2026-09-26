@@ -1,0 +1,12 @@
+langchain-core==1.6.3
+langchain-openai==1.6.2
+langchain-community==0.4.2
+langchain-chroma==0.2.4
+langchain==1.4.2
+langgraph==1.2.11
+requests==2.34.2
+openai==3.14.0
+dotenv==0.9.9
+python-dotenv==1.2.3
+langchain-text-splitters==1.1.2
+numpy==2.2.6
